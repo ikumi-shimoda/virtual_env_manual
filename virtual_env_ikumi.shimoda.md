@@ -1,5 +1,5 @@
 # 使用技術一覧
-|  OS  |  DB  |  Webサーバ  |  APPサーバ  |  フレームワーク |
+|  OS  |  DB  |  Webサーバ  |  サーバ言語  |  フレームワーク |
 |  :--: | :--: | :--: | :--: | :--: |
 |  CentOS7  |  MySQL5.7  |  Nginx  |  PHP7.3  |  laravel6.0  |
 
@@ -24,10 +24,6 @@
 ## vagrantの使用
 - 先ほど作成した、vagrant_laravelディレクトリに移動します。  
     ``$ cd vagrant_laravel``
-
-- laravelアプリケーションのコピー作成  
-  vagrant_laravelディレクトリ以下にlaravelプロジェクトのコピーを作成しておきます。  
-  ``$ cp -r laravel_appディレクトリまでの絶対パス ./``
   
 - このディレクトリでVirtualBoxを使用します。  
     ``$ vagrant init centos/7``  
@@ -61,7 +57,8 @@
 
     Saharaをインストール(構築中の仮想の状態を保存・巻き戻しすることができるプラグイン)  
     ``$ vagrant plugin install sahara``  
-    ``$ vagrant sandbox on``　Saharaを有効化。
+    Saharaを有効化。  
+    ``$ vagrant sandbox on``　
 
   > プラグインの確認   
     インストールしたプラグインは``vagrant plugin list``で確認が出来ます。  
@@ -72,49 +69,48 @@
 
 - ゲストOSの起動  
     ``$ vagrant up``コマンドでゲストOSを起動します。  
-    初回の起動には時間が掛かるので、焦らずに待ちます。
 
 - ゲストOSへのログイン  
     ``$ vagrant ssh``  
 
 - ログインに成功すると、以下の文言が表示されます。  
     ``[vagrant@localhost ~]$``  
-
-  **このタイミングで、``ls``をしてゲストOS側にlaravel_appが存在しない場合**  
-  一度``exit``して、ホストOS側（vagrant_laravelディレクトリ）で下記コマンドを実行します。  
-  ``vagrant plugin install vagrant-vbguest --plugin-version 0.21``
-
 ***
 ## PHPのインストール
 - パッケージのインストール  
 構築されたゲストOSには、まだ開発に必要となるソフトウェアやコマンドなどがインストールされていない状態です。  
-先ほどログインした、ゲストOSの中で以下のコマンドを実行し、パッケージをインストールしていきます。 
-``$ sudo yum -y groupinstall "development tools"``  
-``$ sudo yum -y install epel-release wget``  
-``$ sudo wget http://rpms.famillecollet.com/enterprise/remi-release-7.rpm``  
-``$ sudo rpm -Uvh remi-release-7.rpm``  
+先ほどログインした、ゲストOSの中で以下のコマンドを実行し、パッケージをインストールしていきます。  
+```
+$ sudo yum -y groupinstall "development tools"  
+$ sudo yum -y install epel-release wget  
+$ sudo wget http://rpms.famillecollet.com/enterprise/remi-release-7.rpm  
+$ sudo rpm -Uvh remi-release-7.rpm  
+```
 
 - 次は、PHPのインストールを行います。  
 ``$ sudo yum -y install --enablerepo=remi-php73 php php-pdo php-mysqlnd php-mbstring php-xml php-fpm php-common php-devel php-mysql unzip``  
 - バージョンの確認  
  ``$ php -v``  
  以下のように、バージョン7.3が確認出来れば完了です。  
- ``PHP 7.3.27 (cli) (built: Feb  2 2021 10:32:50) ( NTS )``  
-``Copyright (c) 1997-2018 The PHP Group``  
-``Zend Engine v3.3.27, Copyright (c) 1998-2018 Zend Technologies``
-
+```
+PHP 7.3.27 (cli) (built: Feb  2 2021 10:32:50) ( NTS )  
+Copyright (c) 1997-2018 The PHP Group  
+Zend Engine v3.3.27, Copyright (c) 1998-2018 Zend Technologies
+```
   > 補足説明  
-  - sudoとはrootユーザー(システム管理者)の権限を借りるコマンドです。  
-  vagrant sshを実行してゲストOSにログインした場合、ログインユーザーはvagrantとなります。  
-  今回のように、vagrantユーザーがrootユーザーにしか許されていない操作を実行する際には、sudoを使ってrootユーザーの権限を一時的に借りる必要があります。  
-  - yumとは、CentOSを代表とするLinuxOSのRedHat系ディストリビューションと呼ばれる種類のOSで使用されているパッケージ管理ツール・コマンドです。  
-  -yオプションをつけることで、インストール中に聞かれるyes/noをすべてyesと答えてくれるため、処理を止めずにインストールすることが出来ます。
+  > - sudoとはrootユーザー(システム管理者)の権限を借りるコマンドです。  
+  > vagrant sshを実行してゲストOSにログインした場合、ログインユーザーはvagrantとなります。  
+  > 今回のように、vagrantユーザーがrootユーザーにしか許されていない操作を実行する際には、sudoを使ってrootユーザーの権限を一時的に借りる必要があります。  
+  > - yumとは、CentOSを代表とするLinuxOSのRedHat系ディストリビューションと呼ばれる種類のOSで使用されているパッケージ管理ツール・コマンドです。  
+  > -yオプションをつけることで、インストール中に聞かれるyes/noをすべてyesと答えてくれるため、処理を止めずにインストールすることが出来ます。
 
 - composerのインストール  
   次に、PHPのパッケージ管理ツールであるcomposerをインストールしていきます。  
-  ``php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"``  
-  ``php composer-setup.php``  
-  ``php -r "unlink('composer-setup.php');``  
+```
+  php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"  
+  php composer-setup.php  
+  php -r "unlink('composer-setup.php');
+```  
   インストールが終わったら、すべてのディレクトリからcomposerコマンドを実行できるようにファイルを移動します。 
   ``sudo mv composer.phar /usr/local/bin/composer`` 
 
@@ -122,18 +118,32 @@
   ``$ composer -v``  
   以下のように確認出来れば完了です。  
   ``Composer version 2.0.11 2021-02-24 14:57:23``  
-
+***
+## laravelの作成  
+- ゲストOSのvagrant直下にtest_appという名前のプロジェクトを作成します。  
+  ``composer create-project --prefer-dist laravel/laravel test_app "6.*"``  
+- インストールの確認  
+  ``$ cd test_app``  
+  ``$ php artisan -v``  
+  このように、バージョンが表示されれば完了です。  
+- Authの実装  
+  laravel6.0以降はlaravel/uiを使っています。  
+  ``$ composer require laravel/ui:^1.0 --dev``  
+  ``$ php artisan ui bootstrap --auth``  
+  これでlaravelプロジェクトは作成完了です。  
 ***
 ## Nginxの設定  
 
 - 最新バージョンのインストールの前に、下記のコマンドでNginxのファイル編集します 。  
 	``$ sudo vi /etc/yum.repos.d/nginx.repo``  
 - 追記内容。  
-	``[nginx]``  
-	``name=nginx repo``  
-  ``baseurl=https://nginx.org/packages/mainline/centos/\$releasever\$basearch/``  
-	``gpgcheck=0``  
-	``enabled=1``  
+```
+	[nginx]  
+	name=nginx repo  
+  baseurl=https://nginx.org/packages/mainline/centos/\$releasever\$basearch/  
+	gpgcheck=0  
+	enabled=1  
+```
 - 編集を終えたら、下記のコマンドでNginxをインストール。  
 	``$ sudo yum install -y nginx``  
 - バージョンの確認  
@@ -141,17 +151,22 @@
   インストールが完了されていれば、下記が表示されます。  
   ``nginx version: nginx/1.19.8``  
 
+- Nginxの起動  
+  ``$ sudo systemctl start nginx``  
+  [http://192.168.33.19](http://192.168.33.19)を入力して、NginxのWelcomeページが表示されればOKです。  
+  
   **Nginxがインストールされない場合**  
   ``baseurl=https://nginx.org/packages/mainline/centos/\$releasever\$basearch/``  
   ↓下記に編集します。  
   ``baseurl=http://nginx.org/packages/mainline/centos/7/$basearch/``  
 
-- Nginxの設定ファイルを編集。  
-	``$ sudo vi /etc/nginx/conf.d/default.conf``  
+- test_appを表示させるために、Nginxの設定ファイルを編集。  
+```
+  $ sudo vi /etc/nginx/conf.d/default.conf
 　server ｛  
   listen       80;  
   server_name  192.168.33.19; # Vagranfileで設定したipアドレスを記述してください。  
-  root /vagrant/laravel_app/public; # 追記  
+  root /home/vagrant/test_app/public; # 追記  
   index  index.html index.htm index.php; # 追記  
 
   #charset koi8-r;  
@@ -182,22 +197,13 @@
 	↓以下に編集  
 	``group = nginx``  
 
-- Nginxの起動  
-  ``$ sudo systemctl start nginx``  
-  [http://192.168.33.19](http://192.168.33.19)を入力して、NginxのWelcomeページが表示されればOKです。  
-
-> エラーが表示された場合  
-  ``The stream or file "/vagrant/laravel_app/storage/logs/laravel.log" could not be opened: failed to open stream: Permission denied``  
-  nginx というユーザーでもログファイルへの書き込みができる権限を付与します。  
-  ``$ cd laravel_app``
-  ``$ sudo chmod -R 777 storage``  
-
 ## DBの設定  
-- MySQLのインストール。  
-	``$ sudo wget https://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm``  
-	``$ sudo rpm -Uvh mysql57-community-release-el7-7.noarch.rpm``  
-	``$ sudo yum install -y mysql-community-server``  
-
+- MySQLのインストール。
+```  
+	$ sudo wget https://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm  
+	$ sudo rpm -Uvh mysql57-community-release-el7-7.noarch.rpm  
+	$ sudo yum install -y mysql-community-server  
+```
 - バージョンの確認。  
 	``$ mysql --version``  
   以下の文章が表示されます。    
@@ -208,15 +214,18 @@
 	``$ sudo systemctl start mysqld``  
   接続前にパスワードを確認します。  
 	``$ sudo cat /var/log/mysqld.log | grep 'temporary password'``  
-  ``2017-01-01T00:00:00.000000Z 1 [Note] A temporary password is generated for root@localhost: hogehoge``  
+  2017-01-01T00:00:00.000000Z 1 [Note] A temporary password is generated for root@localhost: hogehoge  
+
   hogehogeと表示されている箇所がパスワードとなっているので、こちらをコピーしておきます。  
 
 - パスワードの変更。  
   しかし、このままではパスワードポリシーが厳格で面倒なので、シンプルなパスワードに設定できるように、ファイルを編集します。  
-  ``$ sudo vi /etc/my.cnf``  
-  ``[mysqld]``  
-  ``datadir=/var/lib/mysql``  
-  ``socket=/var/lib/mysql/mysql.sock``    
+```
+  $ sudo vi /etc/my.cnf  
+  [mysqld]  
+  datadir=/var/lib/mysql  
+  socket=/var/lib/mysql/mysql.sock  
+
   上の二行に続いて下記の一行を追加  
   ``validate-password=OFF``   
 
@@ -232,17 +241,21 @@
 
 - データベースの作成。  
   laravelのtodoアプリに必要なデータベースの作成を行います。  
-  ``mysql > create database laravel_app;`` 
+  ``mysql > create database test_app;`` 
 
-  ここまで完了したら、一度exitをして、laravel_appディレクトリ下の.envファイルの内容を以下に変更してください。  
+  ここまで完了したら、一度exitをして、test_appディレクトリ下の.envファイルの内容を以下に変更してください。  
+  ``DB_DATABASE=laravel``  
+    ↓以下に編集  
+  ``DB_DATABASE=test_app``  
+  
   ``DB_PASSWORD=``  
   ↓ 以下に編集  
   ``DB_PASSWORD=登録したパスワード``  
   これで、次回から設定した新しいパスワードでログインが可能です。  
 
 - マイグレーションの実行  
-  ``$ cd laravel_app``  
-  ゲストOS上でlaravel_appに移動し  
+  ``$ cd test_app``  
+  ゲストOS上でtest_appに移動し  
   ``php artisan migrate``を実行します。  
   マイグレーションが実行されれば、データベースの設定は完了です。  
 
@@ -259,7 +272,7 @@
    ``SELINUX=enforcing``  
    ↓以下に編集  
    ``SELINUX=disabled``  
-   ``exit``をしてから、ホストOSで``vagrant reload``をしてから、Nginxの起動コマンドへ。
+   ``exit``をしてから、ホストOSで``vagrant reload``その後、Nginxの起動コマンドへ。
 
 -  [http://192.168.33.19](http://192.168.33.19)をブラウザで入力して確認。  
   laravelのwelcomページが表示されれば完了です。  
@@ -279,3 +292,4 @@
 [Vagrant ファイル共有　決定版](https://qiita.com/oreo3@github/items/4054a4120ccc249676d9))  
 [CentOS7でyumでnginxの最新版が入らない時](https://qiita.com/awm-kaeruko/items/860651148974ec07b7bb)  
 [Nginxで403 Forbiddenが表示された時のチェックポイント5選](https://engineers.weddingpark.co.jp/nginx-403-forbidden/)
+[【Laravel「laravel-ui」について](http://www.code-magagine.com/?p=10606)
