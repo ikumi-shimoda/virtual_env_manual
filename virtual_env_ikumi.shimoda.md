@@ -185,7 +185,7 @@ Zend Engine v3.3.27, Copyright (c) 1998-2018 Zend Technologies
       fastcgi_param  SCRIPT_FILENAME  /$document_root/$fastcgi_script_name;   #コメントインして$fastcgi_script_name以前を /$document_root/に変更  
       include        fastcgi_params;   #コメントイン  
   ｝
-
+```
 - php-fpmの設定ファイルを編集  
 	``$ sudo vi /etc/php-fpm.d/www.conf``  
 	24行目付近  
